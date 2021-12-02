@@ -16,12 +16,16 @@ def write_out(msg):
 
 class CsvOptions:
     def __init__(self, 
-                 typing_style="quick", 
+                 typing_style="quick",
+                 column_types={},
+                 column_select_func=lambda _: True,
                  drop_tables=False, 
                  delimiter=",",
                  encoding="utf8",
                  bracket_style="all"):
         self.typing_style = typing_style
+        self.column_types = column_types
+        self.column_select_func = column_select_func
         self.drop_tables = drop_tables
         self.delimiter = delimiter
         self.encoding = encoding
@@ -32,6 +36,7 @@ class CsvFileInfo:
     def __init__(self, path, options = None):
         self.path = path
         self.columnNames = None
+        self.columnIndexes = None
         self.columnTypes = None
         self.csvfile = None
         self.reader = None
@@ -72,10 +77,14 @@ class CsvFileInfo:
     def determine_types(self):
         write_out("Determining types")
         rdr = self.get_restarted_reader()
-        self.columnNames = [name for name in next(rdr)]
+        column_names_w_indexes = [(i,c) for i,c in enumerate([name for name in next(rdr)]) if self.options.column_select_func(c)]
+        self.columnIndexes, self.columnNames = zip(*column_names_w_indexes)
         cols = len(self.columnNames)
         if self.options.typing_style == 'none':
             self.columnTypes = ["text"] * cols
+            return
+        if self.options.typing_style == 'manual':
+            self.columnTypes = [self.options.column_types.get(c,"text") for c in self.columnNames]
             return
         self.columnTypes = ["integer"] * cols
         for row in rdr:
@@ -111,7 +120,7 @@ class CsvFileInfo:
         maxL = 10000
         next(reader) #skip headers
         for line in reader:
-            buf.append(line)
+            buf.append([line[i] for i in self.columnIndexes])
             currentBatch += 1
             if currentBatch == maxL:
                 write_out("Inserting {0} records into {1}".format(maxL, self.get_table_name()))
