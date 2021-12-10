@@ -46,7 +46,8 @@ class CsvFileInfo:
         self.lb, self.rb = ("[", "]") if options.bracket_style == "all" else ("", "")
 
     def get_table_name(self):
-        return os.path.splitext(os.path.basename(self.path))[0]
+        #return os.path.splitext(os.path.basename(self.path))[0]
+        return "Result"
 
     def get_minimal_type(self, value):
         try:
