@@ -43,7 +43,7 @@ class CsvFileInfo:
         self.options = options
         if not options:
             self.options = CsvOptions()
-        self.lb, self.rb = ("[", "]") if options.bracket_style == "all" else ("", "")
+        self.lb, self.rb = ("[", "]") if (options.bracket_style == "all" or options.bracket_style == "bracket") else (("`", "`") if options.bracket_style == "backtick" else ("", ""))
 
     def get_table_name(self):
         #return os.path.splitext(os.path.basename(self.path))[0]
