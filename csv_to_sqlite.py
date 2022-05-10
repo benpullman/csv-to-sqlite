@@ -6,6 +6,7 @@ import sys
 import click
 import time
 
+csv.field_size_limit(sys.maxsize)
 
 __version__ = '2.1.1'
 
